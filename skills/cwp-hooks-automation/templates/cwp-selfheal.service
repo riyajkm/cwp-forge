@@ -1,0 +1,14 @@
+# /etc/systemd/system/cwp-selfheal.service
+# Alternative to the cron file. Enable the timer, not the service:
+#   systemctl daemon-reload && systemctl enable --now cwp-selfheal.timer
+# Inspect: systemctl list-timers cwp-selfheal.timer ; journalctl -u cwp-selfheal.service
+[Unit]
+Description=Re-apply CWP custom module files and menu lines after updates
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/cwp-selfheal.sh --apply --quiet
+Nice=10
+IOSchedulingClass=idle
+TimeoutStartSec=300

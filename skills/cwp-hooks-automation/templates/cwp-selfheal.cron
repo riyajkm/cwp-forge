@@ -1,0 +1,11 @@
+# /etc/cron.d/cwp-selfheal   (root:root, mode 0644; name without dots)
+# Daily safety net: re-apply module files / menu lines if a CWP update removed them.
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
+MAILTO=""
+
+# minute hour dom month dow user command
+17 4 * * * root /usr/local/sbin/cwp-selfheal.sh --apply --quiet >> /var/log/mycwpmod/selfheal-cron.log 2>&1
+
+# Example of a PHP job the way CWP runs its own (cwpsrv's bundled PHP, -q = no headers):
+# */10 * * * * root /usr/local/cwp/php71/bin/php -q /opt/mycwpmod/job.php >> /var/log/mycwpmod/job.log 2>&1

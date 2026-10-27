@@ -1,0 +1,44 @@
+{
+  "skill": "cwp-hooks-automation",
+  "cases": [
+    {
+      "prompt": "I want to run a script every time a new hosting account is created on my CWP server (user and domain passed in). How do I set that up?",
+      "expectations": [
+        "Explains CWP action hooks are PHP files in /usr/local/cwpsrv/htdocs/resources/admin/hooks/account/ named account_new.php defining a function account_new($array)",
+        "Notes echo output is not visible so the hook must log to a file",
+        "Recommends the hook only validates input and starts a detached worker (setsid, argument array, no shell) so the panel never blocks",
+        "Validates username and domain strictly before use",
+        "Warns that hook reliability is mixed (account_unsuspend reported not firing) and suggests a reconciling cron",
+        "Marks the exact shape of the array (associative vs positional) as unverified or handles both"
+      ]
+    },
+    {
+      "prompt": "After every CWP update my custom admin module menu entry and my modified files disappear. How do I make them survive?",
+      "expectations": [
+        "Mentions /root/.cwp_autoupdate.sh runs after each CWP update and says to append a guarded line rather than overwrite an existing file",
+        "Recommends keeping a copy of the module files and menu line outside the CWP tree and re-applying them idempotently (compare before copy, append the 3rdparty.php line only if missing)",
+        "Adds a daily cron or systemd timer as a safety net",
+        "Handles chattr +i: lifts it only on the paths written and restores it, and notes chattr -R fails on symlinks",
+        "Uses flock to avoid overlapping runs and defaults to dry-run with an explicit apply flag"
+      ]
+    },
+    {
+      "prompt": "Create a cron job on a CWP server that runs a PHP maintenance script every 10 minutes, and tell me which PHP binary to use.",
+      "expectations": [
+        "Creates /etc/cron.d/<name> with the user column (root) and an explicit PATH, root-owned and mode 0644",
+        "Mentions CWP's own crons call /usr/local/cwp/php71/bin/php -q and that this binary's folder name is historical (modern PHP, check php -v)",
+        "For per-user jobs, suggests the user's crontab and the PHP selector path /opt/alt/phpNN/usr/bin/php and testing with su USER -s /bin/bash",
+        "Adds flock and logging to a file under /var/log"
+      ]
+    },
+    {
+      "prompt": "Which CWP /scripts helpers should my automation call to restart the panel, rebuild one user's PHP-FPM pool and list all users? Is it fine to just run systemctl restart httpd?",
+      "expectations": [
+        "Lists /scripts/restart_cwpsrv or reload_cwpsrv, phpfpm_rebuild_user_conf, and list_users",
+        "Recommends /scripts/restart_httpd or /scripts/cwp_api webservers reload/rebuild_user over raw systemctl, marked as advice rather than a documented rule",
+        "Recommends reload over restart and validating the username argument",
+        "Suggests /scripts/add_alert to surface failures in the panel"
+      ]
+    }
+  ]
+}
