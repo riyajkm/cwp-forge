@@ -1,0 +1,14 @@
+{
+  "name": "cwp-forge",
+  "owner": { "name": "Riyaj Kafardeen", "url": "https://github.com/riyajkm" },
+  "metadata": {
+    "description": "Build anything for CWP (Control Web Panel) with AI coding agents."
+  },
+  "plugins": [
+    {
+      "name": "cwp-forge",
+      "source": "./",
+      "description": "8 skills, 3 agents and 3 commands for CWP module development, the CWP API, server inspection, security review, troubleshooting and releases."
+    }
+  ]
+}

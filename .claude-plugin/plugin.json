@@ -1,0 +1,10 @@
+{
+  "name": "cwp-forge",
+  "version": "0.1.0",
+  "description": "Skills, agents and commands for building CWP (Control Web Panel) modules, automations and integrations — admin and user modules, the CWP API, hooks, a read-only server inspector, security review, troubleshooting and release packaging.",
+  "author": { "name": "Riyaj Kafardeen", "url": "https://github.com/riyajkm" },
+  "homepage": "https://github.com/riyajkm/cwp-forge",
+  "repository": "https://github.com/riyajkm/cwp-forge",
+  "license": "MIT",
+  "keywords": ["cwp", "control-web-panel", "centos-webpanel", "web-hosting", "php", "sysadmin", "skills"]
+}
