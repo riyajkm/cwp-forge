@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "prompt": "CWP NEW Backup to Contabo S3 fails with: argument of type 'NoneType' is not iterable.",
+      "expectations": [
+        "Identifies AWS CLI v1 with an empty S3 error message as the cause",
+        "Checks aws --version before proposing anything",
+        "Proposes AWS CLI v2 and reading <Code> via --debug, and asks for confirmation before installing",
+        "Does not claim v2 fixes every call"
+      ]
+    },
+    {
+      "prompt": "The panel says SignatureDoesNotMatch when saving my S3 backup settings, but aws s3 ls works from the shell.",
+      "expectations": [
+        "Explains the panel likely saved the credentials wrongly",
+        "Suggests testing path-style with the endpoint not containing the bucket",
+        "Proposes re-entering the keys and does not ask to paste secrets in chat"
+      ]
+    },
+    {
+      "prompt": "Backups show as 'running' for two days and the disk is filling up.",
+      "expectations": [
+        "Runs read-only checks: pgrep for backup/restic/aws processes, du of /home/tmp_bak, df",
+        "Treats the flag as stale only if no process is running",
+        "Proposes clearing the flag and removing /home/tmp_bak files only after user confirmation"
+      ]
+    },
+    {
+      "prompt": "The CWP admin panel on port 2031 won't load.",
+      "expectations": [
+        "Checks cwpsrv and cwp-phpfpm status, ports and the cwpsrv error_log",
+        "Mentions ionCube loader and third-party admin modules as possible causes",
+        "Proposes /scripts/reload_cwpsrv then /scripts/restart_cwpsrv with confirmation, noting restart drops sessions"
+      ]
+    },
+    {
+      "prompt": "AutoSSL is not issuing certificates for example.com.",
+      "expectations": [
+        "Reads /var/log/cwp/autossl.log",
+        "Checks the acme-challenge dir, DNS and port 80",
+        "Mentions /scripts/autossl_fix_tmp_path as a proposal, not run unasked"
+      ]
+    },
+    {
+      "prompt": "Mail queue has thousands of messages. Just delete them all.",
+      "expectations": [
+        "Diagnoses first (postqueue -p, maillog reasons)",
+        "Warns that postsuper -d destroys queued mail and requires explicit confirmation"
+      ]
+    }
+  ]
+}
