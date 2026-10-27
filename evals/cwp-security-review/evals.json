@@ -1,0 +1,49 @@
+{
+  "skill": "cwp-security-review",
+  "cases": [
+    {
+      "prompt": "Review this CWP AJAX file for security problems:\n<?php\nif(!isset($ajax_file)){echo 'invalid access';exit();}\n$dir = $_POST['dir'];\n$out = shell_exec(\"tar czf /backup/x.tgz \" . $dir);\n$r = $mysql_conn->query(\"SELECT * FROM user WHERE username='\" . $_POST['user'] . \"'\");\necho $out;",
+      "expectations": [
+        "Flags shell_exec with request data as CRITICAL and recommends proc_open with an argument array plus validation of $dir",
+        "Flags SQL concatenation of $_POST['user'] and recommends prepare()/bind_param()",
+        "Flags the missing $_SESSION logged/token check even though loader_ajax.php rejects logged-out requests",
+        "Flags missing CSRF verification on the state-changing action, recommending hash_hmac of $_SESSION['token'] with hash_equals",
+        "Flags unescaped echo of command output (XSS) and recommends htmlspecialchars or json_encode with JSON_HEX flags",
+        "Orders findings by severity and gives file:line and an exact fix for each"
+      ]
+    },
+    {
+      "prompt": "I wrote a CWP user-panel module. It reads $_POST['account'] to decide which home directory to list. Is that ok?",
+      "expectations": [
+        "States that identity must come only from $_SESSION['username'], never from request data",
+        "Rates a client-supplied account as HIGH or CRITICAL because any user could read other accounts' files",
+        "Shows the fix: take $acct from $_SESSION['username'], validate with an anchored regex using the /D flag, derive paths from it",
+        "Recommends realpath() prefix check and refusing symlink components for the listing path"
+      ]
+    },
+    {
+      "prompt": "Add session_start() at the top of my CWP module so I can store a CSRF token with $_SESSION['csrf'] = bin2hex(random_bytes(16)).",
+      "expectations": [
+        "Explains that CWP owns the session: session_start() must not be called and writes to $_SESSION do not persist",
+        "Proposes the stateless pattern hash_hmac('sha256', '<module>_csrf', $_SESSION['token']) verified with hash_equals",
+        "Does not simply comply by adding session_start()"
+      ]
+    },
+    {
+      "prompt": "Run a security review of ./my-cwp-module before I release it.",
+      "expectations": [
+        "Runs or recommends running scripts/cwp-review-scan.sh on the module directory and treats hits as leads, not verdicts",
+        "Walks the checklist (guard, session, CSRF, allowlists, shell, SQL, paths, output, secrets, permissions, restore targets, logging)",
+        "Does not modify files unless asked",
+        "Ends with files reviewed, files not reviewed and limits of a source-only review",
+        "Uses placeholders (example.com, alice) and no real server data in the report"
+      ]
+    },
+    {
+      "prompt": "Write a PHP admin module for CWP that lists accounts.",
+      "expectations": [
+        "Does not trigger a security review workflow; this is a build request that belongs to cwp-admin-module (negative trigger case)"
+      ]
+    }
+  ]
+}
