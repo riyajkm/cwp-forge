@@ -1,0 +1,53 @@
+{
+  "skill_name": "cwp-admin-module",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a CWP admin module that lists accounts over their disk quota, with a refresh button that re-checks one account's usage.",
+      "expected_output": "A scaffolded module with page, lib, ajax file, ini, menu line and installer, secure by construction.",
+      "files": [],
+      "expectations": [
+        "Uses the loader_ajax.php?ajax=<name>&acc=<action> route and an ajax_<name>.php file, not index.php?module=...&acc=...",
+        "AJAX file starts with the if(!isset($ajax_file)) guard; page file with if(!isset($include_path))",
+        "Checks $_SESSION['logged'] and $_SESSION['token'] and never calls session_start() or writes $_SESSION",
+        "Refresh (state change) is POST only and protected by a CSRF token derived with hash_hmac from $_SESSION['token'], compared with hash_equals",
+        "Reads accounts with a prepared statement against the root_cwp user/packages tables and selects only the columns it uses",
+        "Any root work goes through proc_open with an argument array and a verb allowlist; no shell_exec/exec/system/backticks",
+        "Account names validated with a whitelist regex such as ^[a-z][a-z0-9_]{0,31}$ before use",
+        "Adds an <li> menu line to resources/admin/include/3rdparty.php idempotently, not by editing CWP core menu files",
+        "UI output is escaped (esc()/htmlspecialchars) and AJAX is wrapped in an explicit $.Deferred()",
+        "Provides a live-server test checklist including a logged-out AJAX request, missing/invalid CSRF and bad input"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have a CWP admin module that runs shell_exec(\"/usr/local/bin/tool \" . $_POST['user']). Review and fix it so it is safe to ship.",
+      "expected_output": "Review that identifies the command injection and rewrites it with allowlist, validation, CSRF and proc_open array.",
+      "files": [],
+      "expectations": [
+        "Identifies shell_exec with concatenated request data as command injection running as root",
+        "Replaces it with proc_open using an argument array (no shell) and a fixed absolute binary path and explicit env",
+        "Adds a verb/flag allowlist and a regex validator for the user parameter, rejecting non-string (array) input",
+        "Adds POST-only and CSRF checks (HMAC of $_SESSION['token'], hash_equals) for state-changing actions",
+        "Adds the $ajax_file / $include_path guards and a session check",
+        "Mentions timeouts and output caps for the child process and short generic error messages to the browser",
+        "Does not weaken CWP itself (no chmod 777, no disabling protections)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write an installer for my CWP admin module that adds a menu entry. The admin tree is chattr +i on our servers and CWP updates keep removing the menu line.",
+      "expected_output": "Dry-run-by-default installer with safe chattr handling and update self-heal.",
+      "files": [],
+      "expectations": [
+        "Installer and uninstaller are dry-run by default and only change anything with --apply",
+        "Appends the menu <li> to resources/admin/include/3rdparty.php idempotently (marker check, creates the file if missing)",
+        "Unlocks only the paths it writes into, restores exactly those flags afterwards (trap on EXIT), and uses find ... ! -type l instead of chattr -R if a tree walk is needed because of symlinks",
+        "Installs a self-heal: daily /etc/cron.d entry and/or a line in /root/.cwp_autoupdate.sh that re-runs the same fix routine",
+        "Keeps a pristine payload copy outside the CWP tree (for example /usr/local/lib/<name>/) to restore from",
+        "Uninstall removes only its own menu line and files and leaves other modules' lines",
+        "Scripts are shellcheck-clean bash with set -Eeuo pipefail and refuse --apply when not root"
+      ]
+    }
+  ]
+}
