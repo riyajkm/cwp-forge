@@ -1,0 +1,50 @@
+{
+  "skill_name": "cwp-user-module",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Build a CWP user-panel module where customers can see their top disk-using folders. Computing it needs root.",
+      "expected_output": "A user module plus root job queue; module never runs root commands itself.",
+      "files": [],
+      "expectations": [
+        "Creates the three files: user_files/modules/<name>.php, users/cwp_lang/en/<name>.ini and the Twig mod_<name>.html in the theme folder",
+        "Uses $_SESSION['username'] as the only identity and validates it; never takes the account from request parameters",
+        "Does not call shell_exec/exec/system or build shell strings in the module; privileged work goes through a job queue",
+        "Queue: module writes a strictly validated JSON job atomically into a root/panel-owned 0700 spool, not into the customer's home",
+        "A root cron/systemd processor re-validates file owner, size, JSON shape, user, action allowlist and args, and runs handlers with argument arrays",
+        "Module polls a result that is only returned to the job's own user",
+        "Uses the same-route AJAX convention (?module=<name>&acc=<action>), POST+CSRF for submit, JSON responses",
+        "Registers the module by adding a block to menuConf.php without replacing the whole file, and mentions enabling the feature for the package",
+        "Flags the undocumented parts (session keys, menuConf entry format, panel uid) as things to verify on the target CWP version"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "My CWP user module reads a 'user' field from the POST body and then runs a root script for that user. Can you make it safe?",
+      "expected_output": "Rewrite that removes request-supplied identity and uses a queue.",
+      "files": [],
+      "expectations": [
+        "Explains that identity must come from $_SESSION['username'], so any request-supplied user is a horizontal privilege escalation",
+        "Removes the direct root execution from the panel-facing code and introduces the spool-based job queue",
+        "Adds CSRF protection for the submit action and rate limiting / pending-job cap per user",
+        "Processor verifies the job's user against the file name and the real hosting account (uid, home directory) and rejects symlinks and oversized files",
+        "Never reads files from customer-writable locations as root without symlink checks",
+        "Adds a forged-job test plan (mismatched names, unknown actions, other users' ids, symlinks)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Package my CWP user module so it survives CWP updates and can be installed and removed cleanly.",
+      "expected_output": "Installer/uninstaller/fix-module with menuConf patching and self-heal.",
+      "files": [],
+      "expectations": [
+        "Installer and uninstaller are dry-run by default with --apply to execute",
+        "menuConf.php is patched by inserting a marked block (backup first, php -l on the result, rollback on failure), never by overwriting the file; uninstall deletes only the marked block",
+        "Handles chattr +i by unlocking only needed paths and restoring them via trap",
+        "Installs the Twig template into every listed theme and warns that the original theme is overwritten on CWP updates",
+        "Adds daily cron and /root/.cwp_autoupdate.sh self-heal calling the same fix routine",
+        "Sets up the spool directories with 0700 and the processor cron, and removes them on uninstall (keeping data unless --purge)"
+      ]
+    }
+  ]
+}

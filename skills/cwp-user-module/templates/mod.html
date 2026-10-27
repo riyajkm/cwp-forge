@@ -1,0 +1,54 @@
+<div id="cwpmod_example" class="wrapper wrapper-content">
+<style>
+#cwpmod_example .m-wrap{overflow-x:auto}
+#cwpmod_example pre{max-height:360px;overflow:auto}
+</style>
+<div class="ibox float-e-margins">
+  <div class="ibox-title"><h5>{{ langmod.TITLE|e }}</h5></div>
+  <div class="ibox-content">
+    <p>{{ langmod.INTRO|e }} <strong>{{ mod.username|e }}</strong></p>
+    <div class="form-inline" style="margin-bottom:10px">
+      <label for="m-top">{{ langmod.TOP_LABEL|e }}</label>
+      <input type="number" id="m-top" class="form-control" value="10" min="1" max="20" style="width:80px">
+      <button type="button" id="m-run" class="btn btn-primary btn-sm"
+        data-url="./{{ users|e('html_attr') }}/index.php?module=cwpmod_example"
+        data-csrf="{{ mod.csrf|e('html_attr') }}"
+        data-queued="{{ langmod.QUEUED|e('html_attr') }}"
+        data-failed="{{ langmod.FAILED|e('html_attr') }}"
+        data-neterr="{{ langmod.E_NET|e('html_attr') }}">{{ langmod.BTN_RUN|e }}</button>
+    </div>
+    <div id="m-msg" aria-live="polite"></div>
+    <div class="m-wrap"><pre id="m-out"></pre></div>
+  </div>
+</div>
+
+<script>
+(function ($) {
+  var B = $('#m-run'), URL = B.data('url'), CSRF = B.data('csrf'), tries = 0;
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]; }); }
+  function say(type, text) { $('#m-msg').html('<div class="alert alert-' + type + '" role="alert">' + esc(text) + '</div>'); }
+  // Explicit Deferred, same reason as the admin panel: do not rely on $.ajax().then() semantics.
+  function api(acc, data, post) {
+    var d = $.Deferred();
+    $.ajax({url: URL + '&acc=' + acc, type: post ? 'POST' : 'GET', dataType: 'json', data: post ? $.extend({csrf: CSRF}, data) : data})
+      .done(function (r) { if (r && r.ok) { d.resolve(r.data); } else { d.reject((r && r.error) || B.data('neterr')); } })
+      .fail(function (x) { var m = x.responseJSON && x.responseJSON.error; d.reject(m || B.data('neterr')); });
+    return d.promise();
+  }
+  function poll(id) {
+    tries += 1;
+    api('status', {id: id}, false).done(function (s) {
+      if (s.state === 'done') { $('#m-msg').empty(); $('#m-out').text(JSON.stringify(s.result, null, 2)); B.prop('disabled', false); }
+      else if (s.state === 'failed' || s.state === 'unknown' || tries > 40) { say('danger', s.error || B.data('failed')); B.prop('disabled', false); }
+      else { setTimeout(function () { poll(id); }, 3000); }
+    }).fail(function (e) { say('danger', e); B.prop('disabled', false); });
+  }
+  B.on('click', function () {
+    B.prop('disabled', true); tries = 0; $('#m-out').empty();
+    api('submit', {action: 'usage-report', top: $('#m-top').val()}, true).done(function (r) {
+      say('info', B.data('queued')); poll(r.id);
+    }).fail(function (e) { say('danger', e); B.prop('disabled', false); });
+  });
+})(jQuery);
+</script>
+</div>
