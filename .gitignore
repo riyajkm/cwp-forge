@@ -1,0 +1,8 @@
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+.env*
+cwp-facts.md
+__pycache__/
