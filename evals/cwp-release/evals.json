@@ -1,0 +1,40 @@
+{
+  "skill": "cwp-release",
+  "cases": [
+    {
+      "prompt": "I finished my CWP admin module. Help me release it as an open-source project on GitHub.",
+      "expectations": [
+        "Recommends running a security review (cwp-security-review) as a gate before releasing",
+        "Provides or points to install.sh/uninstall.sh that are idempotent, support --dry-run and keep existing config",
+        "Proposes CI with shellcheck, php -l and bats, and a release workflow that takes notes from CHANGELOG",
+        "Mentions SemVer with Keep a Changelog, SECURITY.md, CONTRIBUTING.md, issue templates and branch protection",
+        "Does not commit, tag or push without being asked"
+      ]
+    },
+    {
+      "prompt": "I develop on Windows and my GitHub Actions run fails with 'Permission denied' on install.sh and tests. What is wrong?",
+      "expectations": [
+        "Identifies that files committed from Windows are mode 100644",
+        "Gives git update-index --chmod=+x for each script and a way to verify with git ls-files --stage",
+        "Suggests .gitattributes with eol=lf for *.sh and a CI step that checks executable bits"
+      ]
+    },
+    {
+      "prompt": "Write the installer for my CWP module. /usr/local/cwpsrv/htdocs/admin is immutable and CWP updates keep removing my menu entry.",
+      "expectations": [
+        "Uses chattr -i only on directories it writes into, via find -xdev ! -type l -exec chattr -i {} +, and restores the lock afterwards (trap)",
+        "Appends the menu <li> to resources/admin/include/3rdparty.php only if absent, creating the file when missing",
+        "Adds a self-heal mode (install.sh --heal) plus a cron job that re-applies module files and menu without touching config",
+        "Installer supports --dry-run and is shellcheck-clean at all severities, never uses curl | bash"
+      ]
+    },
+    {
+      "prompt": "How do I announce my module on the CWP forum and get it into the CWP developer programme?",
+      "expectations": [
+        "Describes a factual forum post (what it does, tested versions, install with checksum, uninstall, support channel)",
+        "Says to verify the current developer programme requirements with the CWP team or docs and does not invent an approval process",
+        "Warns not to claim official or certified status and to redact hostnames, IPs and accounts in posts"
+      ]
+    }
+  ]
+}
