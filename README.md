@@ -53,13 +53,13 @@ The agent loads `cwp-admin-module` and runs its generator, `new-admin-module.sh 
 ```
 quota_watch/
 ├── cwp/
-│   ├── addons/ajax/ajax_quota_watch.php   
-│   ├── include/menu.snippet               
+│   ├── addons/ajax/ajax_quota_watch.php
+│   ├── include/menu.snippet
 │   ├── modules/
-│   │   ├── language/en/quota_watch.ini    
-│   │   ├── quota_watch.php                
-│   │   └── quota_watch/lib.php            
-├── engine                                 
+│   │   ├── language/en/quota_watch.ini
+│   │   ├── quota_watch.php
+│   │   └── quota_watch/lib.php
+├── engine
 ├── fix-menu.sh
 ├── install.sh
 └── uninstall.sh
