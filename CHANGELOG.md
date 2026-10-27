@@ -4,6 +4,10 @@ All notable changes to this project are documented here. Format: [Keep a Changel
 
 ## [Unreleased]
 
+### Changed
+
+- docs: README overhaul, screenshots, social preview
+
 ## [0.1.0] - 2026-10-28
 
 ### Added
