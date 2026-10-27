@@ -1,0 +1,54 @@
+{
+  "skill": "cwp-api",
+  "cases": [
+    {
+      "prompt": "Write a PHP function for our WHMCS-style billing system that suspends a CWP account when an invoice is overdue and upgrades the account to the package named 'business'. The CWP server is server.example.com.",
+      "expectations": [
+        "POSTs to https://HOST:2304/v1/account/ with action=susp and user, form-encoded, with the key in the request body",
+        "Resolves the package name 'business' to its numeric id via packages list before calling changepack (action=udp, user, package=<id>)",
+        "Checks the JSON 'status' field for OK and treats non-JSON bodies as errors rather than trusting the HTTP code",
+        "Reads the API key from configuration or environment, does not hard-code it, and masks it in logs and error messages",
+        "Keeps TLS verification on by default, mentioning an opt-out only for self-signed lab servers",
+        "Mentions the API key needs the account/susp and changepack/udp permissions and an IP-restricted key in API Manager"
+      ]
+    },
+    {
+      "prompt": "My CWP API call to create an account returns 'Unauthorized action' even though I enabled the Account function in API Manager. Also changing the package of a customer with the package name fails with 'Something went wrong'. What is going on?",
+      "expectations": [
+        "Explains that permissions are per function and per action, so the specific add action row must be ticked, not only the function",
+        "Explains that changepack requires the package id, not the package name, and that the id comes from packages list",
+        "Suggests checking /var/log/cwp/cwp_api.log",
+        "Notes that the error text can echo the key so it must be masked when shared or logged",
+        "Does not claim facts about unlisted functions without marking them unverified"
+      ]
+    },
+    {
+      "prompt": "Use the CWP API from my laptop to list all accounts on server.example.com and then terminate the account 'alice'. Show me how, safely.",
+      "expectations": [
+        "Uses scripts/cwp-api.sh or an equivalent that passes the key via environment/stdin (curl -K -), never as a command-line argument or in the URL",
+        "Runs account action=list first (read-only) and shows the redacted request for the delete as a dry run before applying",
+        "Asks the user to confirm before performing account action=del and mentions taking a backup first",
+        "Notes that account del returns {\"status\":\"OK\"} followed by an HTML log and only the leading JSON should be parsed",
+        "Mentions the caller IP must match the key's Ip Origin and port 2304 must be open in the firewall for that IP"
+      ]
+    },
+    {
+      "prompt": "I am logged in as root on the CWP server itself. What is the quickest way to suspend and unsuspend a user and rebuild their web server config without using HTTP?",
+      "expectations": [
+        "Points to /scripts/cwp_api account suspend_user USER and unsuspend_user USER",
+        "Points to /scripts/cwp_api webservers rebuild_user USER (or reload) for the vhost rebuild",
+        "States it does not cover account creation or package changes, which need the REST API",
+        "Marks as unverified whether the shell route triggers action hooks"
+      ]
+    },
+    {
+      "prompt": "Give me a Python script to email-report disk usage per CWP account using the API, no third-party packages.",
+      "expectations": [
+        "Uses urllib from the standard library with a POST to /v1/account/ action=list, or reuses templates/cwp_api.py",
+        "Reads diskused and disklimit from msj[] entries",
+        "Takes the key from the environment and does not print it",
+        "Sets timeouts and handles non-JSON or status Error responses"
+      ]
+    }
+  ]
+}
